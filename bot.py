@@ -1,15 +1,34 @@
-!pip install python-telegram-bot nest_asyncio
+!pip install python-telegram-bot flask nest_asyncio
 
 import nest_asyncio
 nest_asyncio.apply()
 
+import os
+from flask import Flask
+import threading
+
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
-TOKEN = "8343738974:AAG-_FNN6DVQLnCtKOXRIPpBbzbEDKxXGTA"
-OWNER_ID = 6668500692
+# 🔑 ENV variables (Render me set karna)
+TOKEN = os.getenv("TOKEN")
+OWNER_ID = int(os.getenv("OWNER_ID"))
 
-# store mapping: forwarded message id → user id
+# 🌐 Flask server (keep alive)
+app_flask = Flask('')
+
+@app_flask.route('/')
+def home():
+    return "Bot is alive!"
+
+def run():
+    app_flask.run(host='0.0.0.0', port=10000)
+
+def keep_alive():
+    t = threading.Thread(target=run)
+    t.start()
+
+# 📩 message mapping
 message_map = {}
 
 # user → owner
@@ -21,11 +40,9 @@ async def forward_to_owner(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text=f"📩 {user.first_name}:\n{update.message.text}"
     )
     
-    # mapping store karo
     message_map[sent_msg.message_id] = user.id
 
-
-# owner → user (reply system)
+# owner → user (reply)
 async def reply_to_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.reply_to_message:
         replied_msg_id = update.message.reply_to_message.message_id
@@ -38,9 +55,13 @@ async def reply_to_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text=update.message.text
             )
 
+# 🚀 bot start
 app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(MessageHandler(filters.TEXT & ~filters.User(OWNER_ID), forward_to_owner))
 app.add_handler(MessageHandler(filters.TEXT & filters.User(OWNER_ID), reply_to_user))
+
+# 👇 keep alive start
+keep_alive()
 
 app.run_polling()
