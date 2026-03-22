@@ -1,15 +1,15 @@
 import os
+import asyncio
 from flask import Flask
 import threading
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
-# 🔑 ENV variables
 TOKEN = os.getenv("TOKEN")
 OWNER_ID = int(os.getenv("OWNER_ID"))
 
-# 🌐 Flask server (Render ke liye)
+# 🌐 Flask
 app_flask = Flask(__name__)
 
 @app_flask.route('/')
@@ -17,14 +17,12 @@ def home():
     return "Bot is alive!"
 
 def run_flask():
-    # Render dynamic port
     port = int(os.environ.get("PORT", 10000))
     app_flask.run(host='0.0.0.0', port=port)
 
-# 📩 message mapping
+# 📩 mapping
 message_map = {}
 
-# user → owner
 async def forward_to_owner(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
 
@@ -35,7 +33,6 @@ async def forward_to_owner(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         message_map[sent_msg.message_id] = user.id
 
-# owner → user
 async def reply_to_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.reply_to_message:
         replied_msg_id = update.message.reply_to_message.message_id
@@ -49,20 +46,25 @@ async def reply_to_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     text=update.message.text
                 )
 
-# 🚀 MAIN
-def main():
-    # Flask ko background me chala
+# 🚀 MAIN ASYNC FIX
+async def main():
+    # Flask thread
     threading.Thread(target=run_flask, daemon=True).start()
 
-    # Bot start
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(MessageHandler(filters.TEXT & ~filters.User(OWNER_ID), forward_to_owner))
     app.add_handler(MessageHandler(filters.TEXT & filters.User(OWNER_ID), reply_to_user))
 
     print("🤖 Bot started...")
-    app.run_polling()
+
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling()
+
+    # bot ko alive rakho
+    while True:
+        await asyncio.sleep(1000)
 
 # RUN
-if __name__ == "__main__":
-    main()
+asyncio.run(main())
