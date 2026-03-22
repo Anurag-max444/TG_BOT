@@ -6,8 +6,8 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
 # 🔑 TOKEN & OWNER ID
-TOKEN = "8343738974:AAG-_FNN6DVQLnCtKOXRIPpBbzbEDKxXGTA"
-OWNER_ID =  6668500692 
+TOKEN = os.getenv("TOKEN")
+OWNER_ID = int(os.getenv("OWNER_ID"))
 
 # 🌐 Flask server (Render ke liye)
 app_flask = Flask(__name__)
