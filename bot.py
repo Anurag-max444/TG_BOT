@@ -1,16 +1,15 @@
 import os
-import asyncio
 from flask import Flask
 import threading
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
+# 🔑 TOKEN & OWNER ID
 TOKEN = "8343738974:AAG-_FNN6DVQLnCtKOXRIPpBbzbEDKxXGTA"
-OWNER_ID = 6668500692 
+OWNER_ID =  6668500692 
 
-
-# 🌐 Flask server
+# 🌐 Flask server (Render ke liye)
 app_flask = Flask(__name__)
 
 @app_flask.route('/')
@@ -20,7 +19,7 @@ def home():
 def run_flask():
     app_flask.run(host='0.0.0.0', port=10000)
 
-# 📩 mapping
+# 📩 message mapping
 message_map = {}
 
 # user → owner
@@ -47,8 +46,9 @@ async def reply_to_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text=update.message.text
             )
 
-async def main():
-    # Flask ko separate thread me chala
+# 🚀 MAIN START
+def main():
+    # Flask ko alag thread me chala
     threading.Thread(target=run_flask).start()
 
     # Bot start
@@ -58,7 +58,8 @@ async def main():
     app.add_handler(MessageHandler(filters.TEXT & filters.User(OWNER_ID), reply_to_user))
 
     print("🤖 Bot started...")
-    await app.run_polling()
+    app.run_polling()
 
-# 🚀 RUN
-asyncio.run(main())
+# RUN
+if __name__ == "__main__":
+    main()
