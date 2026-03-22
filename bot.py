@@ -1,5 +1,3 @@
-!pip install python-telegram-bot flask nest_asyncio
-
 import nest_asyncio
 nest_asyncio.apply()
 
