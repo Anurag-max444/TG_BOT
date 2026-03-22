@@ -1,4 +1,5 @@
 import os
+import asyncio
 from flask import Flask
 import threading
 
@@ -8,20 +9,18 @@ from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTyp
 TOKEN = "8343738974:AAG-_FNN6DVQLnCtKOXRIPpBbzbEDKxXGTA"
 OWNER_ID = 6668500692 
 
-# Flask server
-app_flask = Flask('')
+
+# 🌐 Flask server
+app_flask = Flask(__name__)
 
 @app_flask.route('/')
 def home():
     return "Bot is alive!"
 
-def run():
+def run_flask():
     app_flask.run(host='0.0.0.0', port=10000)
 
-def keep_alive():
-    t = threading.Thread(target=run)
-    t.start()
-
+# 📩 mapping
 message_map = {}
 
 # user → owner
@@ -48,11 +47,18 @@ async def reply_to_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text=update.message.text
             )
 
-app = ApplicationBuilder().token(TOKEN).build()
+async def main():
+    # Flask ko separate thread me chala
+    threading.Thread(target=run_flask).start()
 
-app.add_handler(MessageHandler(filters.TEXT & ~filters.User(OWNER_ID), forward_to_owner))
-app.add_handler(MessageHandler(filters.TEXT & filters.User(OWNER_ID), reply_to_user))
+    # Bot start
+    app = ApplicationBuilder().token(TOKEN).build()
 
-keep_alive()
-import asyncio
-asyncio.run(app.run_polling())
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.User(OWNER_ID), forward_to_owner))
+    app.add_handler(MessageHandler(filters.TEXT & filters.User(OWNER_ID), reply_to_user))
+
+    print("🤖 Bot started...")
+    await app.run_polling()
+
+# 🚀 RUN
+asyncio.run(main())
