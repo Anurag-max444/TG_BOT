@@ -1,6 +1,3 @@
-import nest_asyncio
-nest_asyncio.apply()
-
 import os
 from flask import Flask
 import threading
@@ -8,11 +5,11 @@ import threading
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
-# 🔑 ENV variables (Render me set karna)
-TOKEN = os.getenv("TOKEN")
-OWNER_ID = int(os.getenv("OWNER_ID"))
+# 🔑 direct token (abhi simple rakhenge)
+TOKEN = "8343738974:AAG-_FNN6DVQLnCtKOXRIPpBbzbEDKxXGTA"
+OWNER_ID = 6668500692  # apna user id
 
-# 🌐 Flask server (keep alive)
+# 🌐 Flask server (Render ke liye)
 app_flask = Flask('')
 
 @app_flask.route('/')
@@ -26,7 +23,7 @@ def keep_alive():
     t = threading.Thread(target=run)
     t.start()
 
-# 📩 message mapping
+# 📩 mapping
 message_map = {}
 
 # user → owner
@@ -40,7 +37,7 @@ async def forward_to_owner(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     message_map[sent_msg.message_id] = user.id
 
-# owner → user (reply)
+# owner → user
 async def reply_to_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.reply_to_message:
         replied_msg_id = update.message.reply_to_message.message_id
@@ -53,13 +50,10 @@ async def reply_to_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text=update.message.text
             )
 
-# 🚀 bot start
 app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(MessageHandler(filters.TEXT & ~filters.User(OWNER_ID), forward_to_owner))
 app.add_handler(MessageHandler(filters.TEXT & filters.User(OWNER_ID), reply_to_user))
 
-# 👇 keep alive start
 keep_alive()
-
 app.run_polling()
