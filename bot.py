@@ -5,11 +5,10 @@ import threading
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
-# 🔑 direct token (abhi simple rakhenge)
 TOKEN = "8343738974:AAG-_FNN6DVQLnCtKOXRIPpBbzbEDKxXGTA"
-OWNER_ID = 6668500692  # apna user id
+OWNER_ID = 6668500692 
 
-# 🌐 Flask server (Render ke liye)
+# Flask server
 app_flask = Flask('')
 
 @app_flask.route('/')
@@ -23,7 +22,6 @@ def keep_alive():
     t = threading.Thread(target=run)
     t.start()
 
-# 📩 mapping
 message_map = {}
 
 # user → owner
