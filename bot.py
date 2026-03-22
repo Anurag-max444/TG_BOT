@@ -1,6 +1,5 @@
 import os
 from flask import Flask
-import asyncio
 import threading
 
 from telegram import Update
@@ -55,4 +54,5 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.User(OWNER_ID), forward_t
 app.add_handler(MessageHandler(filters.TEXT & filters.User(OWNER_ID), reply_to_user))
 
 keep_alive()
+import asyncio
 asyncio.run(app.run_polling())
