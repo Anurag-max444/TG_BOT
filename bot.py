@@ -161,9 +161,15 @@ async def main():
     # auto reply
     app.add_handler(MessageHandler(filters.TEXT & ~filters.User(OWNER_ID), auto_reply))
 
-    print("🤖 Bot Started...")
+    print("🤖 Bot started...")
 
-    await app.run_polling()
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling()
 
-# ▶️ RUN
+    # bot ko alive rakho
+    while True:
+        await asyncio.sleep(1000)
+
+# RUN
 asyncio.run(main())
